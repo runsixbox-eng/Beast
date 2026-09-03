@@ -1,5 +1,5 @@
 --========================================================--
---        PREMIUM CLIENT - AUTO LOAD FROM FILENAME
+--        PREMIUM CLIENT - EXTERNAL FILE LOADER
 --========================================================--
 
 local Players = game:GetService("Players")
@@ -16,7 +16,33 @@ if Old then
 end
 
 --========================================================--
--- SETTINGS & CONFIGURATION
+-- 📌 โซนกำหนดค่าเมนูและไฟล์ย่อย (เพิ่ม/ลด ตรงนี้ได้เลย)
+-- Name     = ชื่อที่จะแสดงบนปุ่มเมนู
+-- Icon     = ไอคอนหน้าปุ่ม (ใช้อิโมจิ)
+-- FileName = ชื่อไฟล์ย่อยที่มีโค้ดสคริปต์ของคุณ (ต้องวางไว้ใน Workspace ของ Executor)
+--========================================================--
+
+local ScriptList = {
+    {
+        Name = "ESP Player",
+        Icon = "👁️",
+        FileName = "Esp.lua"
+    },
+    {
+        Name = "Speed Hack",
+        Icon = "⚡",
+        FileName = "Speed.lua"
+    },
+    -- [วิธีเพิ่มไฟล์ใหม่: ก๊อปปี้ 4 บรรทัดบนแล้วเปลี่ยนชื่อได้เลย เช่น:]
+    -- {
+    --     Name = "Fly Mode",
+    --     Icon = "🕊️",
+    --     FileName = "Fly.lua"
+    -- },
+}
+
+--========================================================--
+-- SETTINGS & GUI SETUP
 --========================================================--
 
 local LOGO_ASSET_ID = "rbxassetid://102265344621893"  
@@ -29,10 +55,6 @@ local GoldLight = Color3.fromRGB(240, 205, 95)
 local BgBlack = Color3.fromRGB(15, 15, 18)
 local SidebarBlack = Color3.fromRGB(18, 18, 22)
 local TextLight = Color3.fromRGB(240, 240, 245)
-
---========================================================--
--- SCREEN GUI & MAIN WINDOW
---========================================================--
 
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "DarkGoldHub"
@@ -156,7 +178,7 @@ local SidebarCorner = Instance.new("UICorner")
 SidebarCorner.CornerRadius = UDim.new(0, 15)
 SidebarCorner.Parent = Sidebar
 
--- Content (พื้นที่บอกสถานะเมื่อกดรันสคริปต์)
+-- Content (พื้นที่แสดงสถานะการโหลดไฟล์)
 local Content = Instance.new("Frame")
 Content.Name = "Content"
 Content.Size = UDim2.new(1, -151, 1, -58)
@@ -174,89 +196,78 @@ ContentCorner.Parent = Content
 local StatusLabel = Instance.new("TextLabel")
 StatusLabel.Size = UDim2.new(1, 0, 1, 0)
 StatusLabel.BackgroundTransparency = 1
-StatusLabel.Text = "Select a script from the menu."
+StatusLabel.Text = "Select a script to load."
 StatusLabel.TextColor3 = TextLight
 StatusLabel.TextSize = 14
 StatusLabel.Font = Enum.Font.GothamMedium
 StatusLabel.Parent = Content
 
 --========================================================--
--- SYSTEM: AUTO LOAD SCRIPT FROM FILENAME
+-- BUILD MENU & FILE LOADER LOGIC
 --========================================================--
 
-local function LoadFilesIntoMenu()
-    if not listfiles or not pcall(listfiles, "Functions") then
-        StatusLabel.Text = "Error: 'Functions' folder not found!"
-        return
-    end
+for _, data in ipairs(ScriptList) do
+    local MenuBtn = Instance.new("TextButton")
+    MenuBtn.Name = data.Name .. "Btn"
+    MenuBtn.Size = UDim2.new(1, -6, 0, 38)
+    MenuBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
+    MenuBtn.BorderSizePixel = 0
+    MenuBtn.Text = ""
+    MenuBtn.AutoButtonColor = false
+    MenuBtn.Parent = Sidebar
 
-    local files = listfiles("Functions")
-    for _, filePath in ipairs(files) do
-        if filePath:sub(-4) == ".lua" then
-            -- ตัดเอาเฉพาะชื่อไฟล์มาทำเป็นชื่อปุ่ม (เช่น "Functions/Speed.lua" จะเหลือ "Speed")
-            local fileName = filePath:match("([^/\\]+)%.lua$")
+    local BtnCorner = Instance.new("UICorner")
+    BtnCorner.CornerRadius = UDim.new(0, 10)
+    BtnCorner.Parent = MenuBtn
 
-            -- สร้างปุ่มเมนู
-            local MenuBtn = Instance.new("TextButton")
-            MenuBtn.Name = fileName .. "Btn"
-            MenuBtn.Size = UDim2.new(1, -6, 0, 38)
-            MenuBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
-            MenuBtn.BorderSizePixel = 0
-            MenuBtn.Text = ""
-            MenuBtn.AutoButtonColor = false
-            MenuBtn.Parent = Sidebar
+    local Icon = Instance.new("TextLabel")
+    Icon.Size = UDim2.fromOffset(28, 38)
+    Icon.Position = UDim2.fromOffset(3, 0)
+    Icon.BackgroundTransparency = 1
+    Icon.Text = data.Icon or "📂"
+    Icon.TextColor3 = Gold
+    Icon.TextSize = 14
+    Icon.Font = Enum.Font.GothamBold
+    Icon.Parent = MenuBtn
 
-            local BtnCorner = Instance.new("UICorner")
-            BtnCorner.CornerRadius = UDim.new(0, 10)
-            BtnCorner.Parent = MenuBtn
+    local Label = Instance.new("TextLabel")
+    Label.Size = UDim2.new(1, -34, 1, 0)
+    Label.Position = UDim2.fromOffset(32, 0)
+    Label.BackgroundTransparency = 1
+    Label.Text = data.Name
+    Label.TextColor3 = TextLight
+    Label.TextSize = 11
+    Label.Font = Enum.Font.GothamBold
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+    Label.Parent = MenuBtn
 
-            local Icon = Instance.new("TextLabel")
-            Icon.Size = UDim2.fromOffset(28, 38)
-            Icon.Position = UDim2.fromOffset(3, 0)
-            Icon.BackgroundTransparency = 1
-            Icon.Text = "📂"
-            Icon.TextColor3 = Gold
-            Icon.TextSize = 14
-            Icon.Font = Enum.Font.GothamBold
-            Icon.Parent = MenuBtn
+    -- กดปุ่มแล้วอ่านไฟล์ย่อยมารันทันที
+    MenuBtn.MouseButton1Click:Connect(function()
+        local success, err = pcall(function()
+            if not isfile or not isfile(data.FileName) then
+                error("File not found: " .. data.FileName)
+            end
+            
+            local fileContent = readfile(data.FileName)
+            local runFunc = loadstring(fileContent)
+            if runFunc then
+                task.spawn(runFunc) -- สั่งรันสคริปต์ในไฟล์ย่อย
+            end
+        end)
 
-            local Label = Instance.new("TextLabel")
-            Label.Size = UDim2.new(1, -34, 1, 0)
-            Label.Position = UDim2.fromOffset(32, 0)
-            Label.BackgroundTransparency = 1
-            Label.Text = fileName
-            Label.TextColor3 = TextLight
-            Label.TextSize = 11
-            Label.Font = Enum.Font.GothamBold
-            Label.TextXAlignment = Enum.TextXAlignment.Left
-            Label.Parent = MenuBtn
-
-            -- **[กดปุ่มแล้วโหลด + รันสคริปต์ในไฟล์นั้นทันที]**
-            MenuBtn.MouseButton1Click:Connect(function()
-                local success, err = pcall(function()
-                    local scriptContent = readfile(filePath)
-                    local runFunc = loadstring(scriptContent)
-                    if runFunc then
-                        task.spawn(runFunc) -- รันสคริปต์
-                    end
-                end)
-
-                if success then
-                    StatusLabel.Text = "Executed: " .. fileName
-                    -- ทำอนิเมชั่นเปลี่ยนสีปุ่มชั่วคราวให้รู้ว่ากดแล้ว
-                    TweenService:Create(MenuBtn, TweenInfo.new(0.1), {BackgroundColor3 = GoldLight}):Play()
-                    task.wait(0.15)
-                    TweenService:Create(MenuBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(25, 25, 32)}):Play()
-                else
-                    StatusLabel.Text = "Error in " .. fileName
-                    warn(err)
-                end
-            end)
+        if success then
+            StatusLabel.Text = "Executed: " .. data.Name
+            TweenService:Create(MenuBtn, TweenInfo.new(0.1), {BackgroundColor3 = GoldLight}):Play()
+            task.wait(0.15)
+            TweenService:Create(MenuBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(25, 25, 32)}):Play()
+        else
+            StatusLabel.Text = "Error: " .. data.FileName
+            warn(err)
         end
-    end
+    end)
 end
 
-task.spawn(LoadFilesIntoMenu)
+Sidebar.CanvasSize = UDim2.new(0, 0, 0, (#ScriptList * 44))
 
 --========================================================--
 -- ANIMATIONS & DRAGGING
