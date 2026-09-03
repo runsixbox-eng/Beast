@@ -15,10 +15,10 @@ local PlayerGui = Player:WaitForChild("PlayerGui")
 --========================================================--
 
 local GITHUB_API =
-    "https://api.github.com/repos/JayZcc/Dexcode/contents/Functions"
+    "https://api.github.com/repos/runsixbox-eng/Beast/contents/Functions"
 
 local RAW_BASE =
-    "https://raw.githubusercontent.com/JayZcc/Dexcode/Dexcode.lua/Functions/"
+    "https://raw.githubusercontent.com/runsixbox-eng/Beast/refs/heads/main/Functions/"
 
 --========================================================--
 -- SETTINGS
